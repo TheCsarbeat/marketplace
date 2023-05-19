@@ -1,7 +1,7 @@
 const RenewableEnergyExchange = artifacts.require("RenewableEnergyExchange");
 
 contract("RenewableEnergyExchange", (accounts) => {
-  it("should create and complete a transaction", async () => {
+  it("should create and complete a energyContract", async () => {
     const instance = await RenewableEnergyExchange.deployed();
     const buyer = accounts[1];
     const seller = accounts[0];
@@ -10,38 +10,44 @@ contract("RenewableEnergyExchange", (accounts) => {
     const duration = 60 * 60 * 24 * 30; // 30 days in seconds
 
     // Call the createContract function from the seller's account
-    await instance.createContract(buyer, energyAmount, price, duration, {
+    await instance.createEnergyContract(energyAmount, price, duration, {
       from: seller,
     });
 
-    const transaction = await instance.getTransaction(1);
-    // log the transaction
-    console.log(transaction);
-    console.log(transaction[7]);
+    const energyContract = await instance.getEnergyContract(1);
+    // log the energyContract
+    console.log(energyContract);
+    console.log(energyContract[7]);
 
-    assert.equal(transaction[1], buyer, "Buyer is incorrect");
-    assert.equal(transaction[2], seller, "Seller is incorrect");
     assert.equal(
-      transaction[3].toNumber(),
+      energyContract[1],
+      "0x0000000000000000000000000000000000000000",
+      "Buyer is incorrect"
+    );
+    assert.equal(energyContract[2], seller, "Seller is incorrect");
+    assert.equal(
+      energyContract[3].toNumber(),
       energyAmount,
       "Energy amount is incorrect"
     );
-    assert.equal(transaction[4].toString(), price, "Price is incorrect");
+    assert.equal(energyContract[4].toString(), price, "Price is incorrect");
     assert.equal(
-      transaction[7],
+      energyContract[7],
       false,
-      "Transaction should not be completed yet"
+      "EnergyContract should not be completed yet"
     );
 
-    // Call the completeTransaction function from the buyer's account
-    await instance.completeTransaction(1, { from: buyer, value: price });
+    // Call the completeEnergyContract function from the buyer's account
+    await instance.completeEnergyContract(1, { from: buyer, value: price });
 
-    const completedTransaction = await instance.getTransaction(1);
+    const completedEnergyContract = await instance.getEnergyContract(1);
+    // log the completed energyContract
+    console.log(completedEnergyContract);
 
     assert.equal(
-      completedTransaction[7],
+      completedEnergyContract[7],
       true,
-      "Transaction should be completed"
+      "EnergyContract should be completed"
     );
   });
 });

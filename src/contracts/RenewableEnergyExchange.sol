@@ -2,11 +2,11 @@ pragma solidity ^0.5.0;
 
 contract RenewableEnergyExchange {
     string public name;
-    uint public transactionCount = 0;
-    mapping(uint => Transaction) public transactions;
+    uint public energyContractCount = 0;
+    mapping(uint => EnergyContract) public energyContracts;
 
-    struct Transaction {
-        uint256 transactionId;
+    struct EnergyContract {
+        uint256 energyContractId;
         address payable buyer;
         address payable seller;
         uint256 energyAmount;
@@ -16,8 +16,8 @@ contract RenewableEnergyExchange {
         bool completed;
     }
 
-    event TransactionCreated(
-        uint256 transactionId,
+    event EnergyContractCreated(
+        uint256 energyContractId,
         address payable buyer,
         address payable seller,
         uint256 energyAmount,
@@ -27,8 +27,8 @@ contract RenewableEnergyExchange {
         bool completed
     );
 
-    event TransactionCompleted(
-        uint256 transactionId,
+    event EnergyContractCompleted(
+        uint256 energyContractId,
         address payable buyer,
         address payable seller,
         uint256 energyAmount,
@@ -42,20 +42,18 @@ contract RenewableEnergyExchange {
         name = "Plataforma de intercambio de energia renovable";
     }
 
-    function createContract(
-        address payable _buyer,
+    function createEnergyContract(
         uint256 _energyAmount,
         uint256 _price,
         uint256 _duration
     ) public {
-        require(_buyer != address(0), "Invalid buyer address");
         require(_energyAmount > 0, "Energy amount must be greater than 0");
         require(_price > 0, "Price must be greater than 0");
 
-        transactionCount++;
-        Transaction memory newTransaction = Transaction(
-            transactionCount,
-            _buyer,
+        energyContractCount++;
+        EnergyContract memory newEnergyContract = EnergyContract(
+            energyContractCount,
+            address(0), // Set buyer to zero address
             msg.sender,
             _energyAmount,
             _price,
@@ -63,11 +61,11 @@ contract RenewableEnergyExchange {
             block.timestamp + _duration,
             false
         );
-        transactions[transactionCount] = newTransaction;
+        energyContracts[energyContractCount] = newEnergyContract;
 
-        emit TransactionCreated(
-            transactionCount,
-            _buyer,
+        emit EnergyContractCreated(
+            energyContractCount,
+            address(0), // Emit zero address as buyer
             msg.sender,
             _energyAmount,
             _price,
@@ -77,35 +75,41 @@ contract RenewableEnergyExchange {
         );
     }
 
-    function completeTransaction(uint256 _transactionId) public payable {
-        Transaction storage transaction = transactions[_transactionId];
+    function completeEnergyContract(uint256 _energyContractId) public payable {
+        EnergyContract storage energyContract = energyContracts[
+            _energyContractId
+        ];
+        require(msg.value >= energyContract.price, "Insufficient funds");
         require(
-            msg.sender == transaction.buyer,
-            "Only the buyer can complete the transaction"
+            !energyContract.completed,
+            "EnergyContract is already completed"
         );
-        require(msg.value >= transaction.price, "Insufficient funds");
-        require(!transaction.completed, "Transaction is already completed");
+        require(
+            msg.sender != energyContract.seller,
+            "Buyer cannot be the seller"
+        );
 
-        transaction.seller.transfer(transaction.price);
-        transaction.completed = true;
+        energyContract.buyer = msg.sender; // Set buyer to the address that calls this function
+        energyContract.seller.transfer(energyContract.price);
+        energyContract.completed = true;
 
-        // update the transaction
-        transactions[_transactionId] = transaction;
+        // update the energyContract
+        energyContracts[_energyContractId] = energyContract;
 
-        emit TransactionCompleted(
-            transaction.transactionId,
-            transaction.buyer,
-            transaction.seller,
-            transaction.energyAmount,
-            transaction.price,
-            transaction.startDate,
-            transaction.endDate,
+        emit EnergyContractCompleted(
+            energyContract.energyContractId,
+            energyContract.buyer,
+            energyContract.seller,
+            energyContract.energyAmount,
+            energyContract.price,
+            energyContract.startDate,
+            energyContract.endDate,
             true
         );
     }
 
-    function getTransaction(
-        uint256 _transactionId
+    function getEnergyContract(
+        uint256 _energyContractId
     )
         public
         view
@@ -121,16 +125,18 @@ contract RenewableEnergyExchange {
             bool
         )
     {
-        Transaction storage transaction = transactions[_transactionId];
+        EnergyContract storage energyContract = energyContracts[
+            _energyContractId
+        ];
         return (
-            transaction.transactionId,
-            transaction.buyer,
-            transaction.seller,
-            transaction.energyAmount,
-            transaction.price,
-            transaction.startDate,
-            transaction.endDate,
-            transaction.completed
+            energyContract.energyContractId,
+            energyContract.buyer,
+            energyContract.seller,
+            energyContract.energyAmount,
+            energyContract.price,
+            energyContract.startDate,
+            energyContract.endDate,
+            energyContract.completed
         );
     }
 }

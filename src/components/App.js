@@ -43,17 +43,17 @@ class App extends Component {
         networkData.address
       );
       this.setState({ renewableEnergyExchange });
-      const transactionCount = await renewableEnergyExchange.methods
-        .transactionCount()
+      const energyContractCount = await renewableEnergyExchange.methods
+        .energyContractCount()
         .call();
-      this.setState({ transactionCount });
-      // Load transactions
-      for (var i = 1; i <= transactionCount; i++) {
-        const transaction = await renewableEnergyExchange.methods
-          .getTransaction(i)
+      this.setState({ energyContractCount });
+      // Load energyContracts
+      for (var i = 1; i <= energyContractCount; i++) {
+        const energyContract = await renewableEnergyExchange.methods
+          .getEnergyContract(i)
           .call();
         this.setState({
-          transactions: [...this.state.transactions, transaction],
+          energyContracts: [...this.state.energyContracts, energyContract],
         });
       }
       this.setState({ loading: false });
@@ -68,29 +68,31 @@ class App extends Component {
     super(props);
     this.state = {
       account: "",
-      transactionCount: 0,
-      transactions: [],
+      energyContractCount: 0,
+      energyContracts: [],
       loading: true,
     };
 
-    this.createContract = this.createContract.bind(this);
-    this.completeTransaction = this.completeTransaction.bind(this);
+    this.createEnergyContract = this.createEnergyContract.bind(this);
+    this.completeEnergyContract = this.completeEnergyContract.bind(this);
   }
 
-  createContract(buyer, energyAmount, price, duration) {
+  createEnergyContract(energyAmount, price, duration) {
+    // duration from days to seconds
+    duration = duration * 86400;
     this.setState({ loading: true });
     this.state.renewableEnergyExchange.methods
-      .createContract(buyer, energyAmount, price, duration)
+      .createEnergyContract(energyAmount, price, duration)
       .send({ from: this.state.account })
       .once("receipt", (receipt) => {
         this.setState({ loading: false });
       });
   }
 
-  completeTransaction(transactionId, price) {
+  completeEnergyContract(energyContractId, price) {
     this.setState({ loading: true });
     this.state.renewableEnergyExchange.methods
-      .completeTransaction(transactionId)
+      .completeEnergyContract(energyContractId)
       .send({ from: this.state.account, value: price })
       .once("receipt", (receipt) => {
         this.setState({ loading: false });
@@ -110,9 +112,9 @@ class App extends Component {
                 </div>
               ) : (
                 <Main
-                  transactions={this.state.transactions}
-                  createContract={this.createContract}
-                  completeTransaction={this.completeTransaction}
+                  energyContracts={this.state.energyContracts}
+                  createEnergyContract={this.createEnergyContract}
+                  completeEnergyContract={this.completeEnergyContract}
                 />
               )}
             </main>

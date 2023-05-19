@@ -4,29 +4,16 @@ class Main extends Component {
   render() {
     return (
       <div id="content">
-        <h1>Create Contract</h1>
+        <h1>Crear Contrato</h1>
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            const buyer = this.buyer.value;
             const energyAmount = this.energyAmount.value;
             const price = this.price.value;
             const duration = this.duration.value;
-            this.props.createContract(buyer, energyAmount, price, duration);
+            this.props.createEnergyContract(energyAmount, price, duration);
           }}
         >
-          <div className="form-group mr-sm-2">
-            <input
-              id="buyer"
-              type="text"
-              ref={(input) => {
-                this.buyer = input;
-              }}
-              className="form-control"
-              placeholder="Buyer Address"
-              required
-            />
-          </div>
           <div className="form-group mr-sm-2">
             <input
               id="energyAmount"
@@ -35,7 +22,7 @@ class Main extends Component {
                 this.energyAmount = input;
               }}
               className="form-control"
-              placeholder="Energy Amount"
+              placeholder="Cantidad de Energia en kWh"
               required
             />
           </div>
@@ -47,7 +34,7 @@ class Main extends Component {
                 this.price = input;
               }}
               className="form-control"
-              placeholder="Price"
+              placeholder="Precio en ETH (Wei)"
               required
             />
           </div>
@@ -59,57 +46,57 @@ class Main extends Component {
                 this.duration = input;
               }}
               className="form-control"
-              placeholder="Duration"
+              placeholder="Duracion en dias"
               required
             />
           </div>
           <button type="submit" className="btn btn-primary">
-            Create Contract
+            Crear Contrato
           </button>
         </form>
         <p>&nbsp;</p>
-        <h2>Transactions</h2>
+        <h2>Contratos de Energia</h2>
         <table className="table">
           <thead>
             <tr>
               <th scope="col">#</th>
-              <th scope="col">Buyer</th>
-              <th scope="col">Seller</th>
-              <th scope="col">Energy Amount</th>
-              <th scope="col">Price</th>
-              <th scope="col">Start Date</th>
-              <th scope="col">End Date</th>
-              <th scope="col">Completed</th>
+              <th scope="col">Comprador</th>
+              <th scope="col">Vendedor</th>
+              <th scope="col">Cantidad de energia en kWh</th>
+              <th scope="col">Precio en ETH</th>
+              <th scope="col">Fecha de Inicio</th>
+              <th scope="col">Fecha Final</th>
+              <th scope="col">Completado</th>
               <th scope="col"></th>
             </tr>
           </thead>
-          <tbody id="transactionList">
-            {this.props.transactions.map((transaction, key) => {
+          <tbody id="energyContractList">
+            {this.props.energyContracts.map((energyContract, key) => {
               return (
                 <tr key={key}>
-                  <th scope="row">{transaction[0].toString()}</th>
-                  <td>{transaction[1]}</td>
-                  <td>{transaction[2]}</td>
-                  <td>{transaction[3].toString()}</td>
-                  <td>{transaction[4].toString()}</td>
+                  <th scope="row">{energyContract[0].toString()}</th>
+                  <td>{energyContract[1]}</td>
+                  <td>{energyContract[2]}</td>
+                  <td>{energyContract[3].toString()}</td>
+                  <td>{energyContract[4].toString()}</td>
                   <td>
                     {new Date(
-                      transaction[5].toNumber() * 1000
+                      energyContract[5].toNumber() * 1000
                     ).toLocaleString()}
                   </td>
                   <td>
                     {new Date(
-                      transaction[6].toNumber() * 1000
+                      energyContract[6].toNumber() * 1000
                     ).toLocaleString()}
                   </td>
-                  <td>{transaction[7] ? "Yes" : "No"}</td>
+                  <td>{energyContract[7] ? "Yes" : "No"}</td>
                   <td>
-                    {!transaction[7] ? (
+                    {!energyContract[7] ? (
                       <button
-                        name={transaction[0]}
-                        value={transaction[4].toString()}
+                        name={energyContract[0]}
+                        value={energyContract[4].toString()}
                         onClick={(event) => {
-                          this.props.completeTransaction(
+                          this.props.completeEnergyContract(
                             event.target.name,
                             event.target.value
                           );
