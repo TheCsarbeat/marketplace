@@ -1,5 +1,5 @@
-const Marketplace = artifacts.require("Marketplace");
+const RenewableEnergyExchange = artifacts.require("RenewableEnergyExchange");
 
 module.exports = function(deployer) {
-  deployer.deploy(Marketplace);
+  deployer.deploy(RenewableEnergyExchange);
 };
